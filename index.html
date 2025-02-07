@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Filmes e Séries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #movies-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .movie-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+        .movie-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+        .movie-details {
+            padding: 15px;
+        }
+        .age-rating {
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .rating {
+            color: gold;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="movies-container"></div>
+
+    <script>
+        function getAgeRatingColor(rating) {
+            if (rating === 0) return 'green';
+            if (rating <= 14) return 'green';
+            if (rating < 18) return 'yellow';
+            return 'red';
+        }
+
+        function renderStars(rating) {
+            return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        }
+
+        function createMovieCard(movie) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            
+            card.innerHTML = `
+                <div class="age-rating" style="background-color: ${getAgeRatingColor(movie.classificacao)}">
+                    ${movie.classificacao === 0 ? 'Livre' : movie.classificacao + ' anos'}
+                </div>
+                <img src="${movie.figura}" alt="${movie.titulo}" class="movie-image">
+                <div class="movie-details">
+                    <h2>${movie.titulo}</h2>
+                    <p>${movie.resumo}</p>
+                    <div class="rating">${renderStars(movie.opinioes[0]?.rating || 0)}</div>
+                    <h3>Gêneros:</h3>
+                    <p>${movie.generos.join(', ')}</p>
+                    <h3>Elenco:</h3>
+                    <p>${movie.elenco.join(', ')}</p>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        async function loadMovies() {
+            try {
+                // Faz uma requisição para carregar o arquivo JSON
+                const response = await fetch('movies.json');
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar os dados dos filmes');
+                }
+                const moviesData = await response.json();
+
+                // Renderiza os filmes
+                const container = document.getElementById('movies-container');
+                moviesData.forEach(movie => {
+                    container.appendChild(createMovieCard(movie));
+                });
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        // Chama a função para carregar os filmes
+        loadMovies();
+    </script>
+</body>
+</html>
